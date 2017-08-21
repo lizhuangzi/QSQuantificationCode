@@ -11,4 +11,3 @@ def startConnection(ip = 'localhost',port = 27017,dbname = 'StockDatas'):
 	else:
 		print("connect success")
 	return db
-

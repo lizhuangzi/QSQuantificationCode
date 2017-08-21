@@ -1,11 +1,15 @@
 #!/usr/bin python
 # coding=utf-8
+import private
+import DataConnection as dc
+
+# private.drop_allCollections(db)
 
 import DataGetter as dg
 
-timeStr = "2016-04-05 10:00:00"
+timeStr = "2016-01-12 10:00:00"
 
-query_result = dg.attribute_history('sz000005', timeStr, 2, 'm')
+query_result = dg.attribute_history('sh600000', timeStr, 5, 'm')
 
 print(query_result)
 
@@ -15,7 +19,7 @@ print(query_result)
 
 # rr = db.collection_names(False)
 
-# db = private.connect_database('StockDatas')
+# db = private.connect_database('StockDatas')timedict[temp] = tuple(results)
 
 
 
