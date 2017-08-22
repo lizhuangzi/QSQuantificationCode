@@ -57,7 +57,6 @@ def serach_timelist(collection,query_time,unit,count,skip_paused=True,pretime=Tr
 		# no skip
 		if (skip_paused and unit_type==0 and len(tuple(results))==0) == False:
 			i += 1
-
 			timedict[temp] = tuple(results.clone())
 
 		query_time = temp
@@ -152,7 +151,7 @@ def attribute_history(security,current_time,count,unit='d',fields=['open','close
 	collection = db[security]
 
 	query_time= string_toDatetime(current_time)
-
+ 
 	time_dict_result = serach_timelist(collection,query_time,unit,count,skip_paused)
 
 	query_properties = {x:[] for x in fields}
