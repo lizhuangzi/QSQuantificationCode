@@ -7,6 +7,9 @@ import datetime
 import numpy as np
 import db_func
 
+
+LEAST_DATE = '2016-01-01 00:00:00'
+
 def string_toDatetime(timestr):
 	return datetime.datetime.strptime(timestr,"%Y-%m-%d %H:%M:%S")
 
@@ -37,6 +40,7 @@ def serach_timelist(collection,query_time,unit,count,skip_paused=True,pretime=Tr
 		if unit_type == 0:
 			temp = query_time + datetime.timedelta(days = -1)
 
+			#if it is the loop to search day.
 			if t == 0:
 
 				tempstr = str(temp)
@@ -50,18 +54,19 @@ def serach_timelist(collection,query_time,unit,count,skip_paused=True,pretime=Tr
 		else:
 			temp = query_time + datetime.timedelta(seconds = -1)
 
+		# beyound threshold
+		if temp < string_toDatetime(LEAST_DATE):
+			print('Warning: the date you search surpass threshold - 2016-01-01 00:00:00')
+			break;
+
 		results = db_func.query_dataThreshold(collection,str(query_time),str(temp))
-
-		# print('get records %s', results.count())
-
 		# no skip
-		if (skip_paused and unit_type==0 and len(tuple(results))==0) == False:
+		if (skip_paused and unit_type==0 and results.count()==0) == False:
 			i += 1
 			timedict[temp] = tuple(results.clone())
 
 		query_time = temp
 		t += 1
-
 	return timedict
 
 def make_statisticsByProperty(tuple_result,query_properties={}):
@@ -72,12 +77,12 @@ def make_statisticsByProperty(tuple_result,query_properties={}):
 		for v in query_properties.itervalues():
 			v.append(0.0)
 		return
-	
+
 	# x is a dictionary
 	volume = 0.0
 	money = 0.0
-	opens = tuple_result[-1]['newest'] 
-	close = tuple_result[0]['newest']
+	opens = tuple_result[0]['newest'] 
+	close = tuple_result[-1]['newest']
 
 	hasmoney = 'money' in qpitks
 	hasavg = 'avg' in qpitks
@@ -101,7 +106,7 @@ def make_statisticsByProperty(tuple_result,query_properties={}):
 			low = x['newest']
 
 
-	avg = money/volume
+	avg = round(money/volume,2)
 
 	if hasmoney:
 		query_properties['money'].insert(0,money)
@@ -133,18 +138,14 @@ def make_statisticsByProperty(tuple_result,query_properties={}):
 
 	query_properties['close'].insert(0,close)
 	query_properties['open'].insert(0,opens)
-
 	query_properties['volume'].insert(0,volume)
 
 	return close
-		
-def lasted_time_unitInfo(lasted_day_tuple):
-	close = lasted_day_tuple[0]['newest']
-	return
+	
 
-def attribute_history(security,current_time,count,unit='d',fields=['open','close','high_limit','low_limit','volume','money','avg','pre_close','paused'],skip_paused=True,fq='pre'):
+def attribute_history(security,current_time,count,unit='d',fields=['open','close','high_limit','low_limit','volume'],skip_paused=True,fq='pre'):
 
-	db = dc.startConnection()
+	db = dc.startConnection('192.168.69.54',27017)
 	if db == None: 
 		return
 	# get collection from db by security
@@ -160,20 +161,21 @@ def attribute_history(security,current_time,count,unit='d',fields=['open','close
 	cds = time_dict_result.items()
 	cds.sort()
 
-	# cc = lasted_time_unitInfo(cds[-1])
-
-	# cds.remove(-1)
-	#making statistic
+	time_stack = []
 	for k,v in cds:
-		print(k)
+		time_stack.append(k)
 		make_statisticsByProperty(v,query_properties)
 
+	# Show Search Time
+	for x in xrange(len(time_stack)-1):
+		print (time_stack.pop())
 
 	query_result = {}
 
 	# change all value to numpy.ndataArray
 	for k,v in query_properties.iteritems():
-		v = v[0:-1]
+		if len(cds)>1:
+			v = v[0:-1]
 		query_result[k] = np.array(v)
 
 	return query_result

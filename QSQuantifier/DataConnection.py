@@ -5,7 +5,7 @@ from pymongo import MongoClient
 
 def startConnection(ip = 'localhost',port = 27017,dbname = 'StockDatas'):
 
-	client = MongoClient('192.168.69.54',27017)
+	client = MongoClient(ip,port)
 	# try:
 	# 	client.admin.command('ismaster')
 	# except Exception as e:
